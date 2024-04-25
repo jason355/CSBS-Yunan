@@ -14,9 +14,9 @@
     <string name="Title2">無聲廣播系統</string>
     <string name="TitleHis">政大附中無聲廣播系統</string>
     <string name="Title3">School Soundless Broadcasting System</string>
-    <string name="About">v1.5.6 開發者:18屆: 余先祐 林珈生 劉子碩 指導老師: 鍾芝敏 </string>
+    <string name="About">v1.5.7 開發者:18屆: 余先祐 林珈生 劉子碩 指導老師: 鍾芝敏 </string>
     <string name ="Developer">開發者:18屆 113 余先祐 林珈生 劉子碩</string>
     <string name="Contect">聯絡: #9611 資訊組</string>
-    <string name = "Version">版本: v1.5.6</string>
+    <string name = "Version">版本: v1.5.7</string>
     <string name="readText">已讀 跳至下一則</string>
 </resources>
