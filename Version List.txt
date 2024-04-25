@@ -1,0 +1,143 @@
+* = 需要修改
+
+
+.apk 命名方式 vXX.X.X
+
+v1.0.0  
+    舊版固定側欄 v1.0
+    無對應 server (因班級資料庫欄位使用 sendto, 非des_grade des_class)
+    有開機提醒音
+
+V1.1.0 
+    無對應 server (因班級資料庫欄位使用 sendto, 非des_grade des_class)
+    v2.0 UI(New, History 在底部)
+    有開機提醒音
+
+v1.1.2
+    對應 server v2.2 穩定，相容 server v2.0 to v2.2
+    v2.0 UI
+    只有當啟動fragment時有提醒音
+    當在 New fragment 時，如有新訊息，可動態增加，(在一訊息跑完時會更新，加入在最後)
+    若使用getNewMessage函式，取到之所有訊息isNew欄位均為 2，直到New_message 啟動 onFinish
+    新增全局廣播變數 isOpenBroadcast，偵測使New是否開啟
+         取消接收訊息時的班級檢查
+    斷線自動重新連線上限增加為 40 次，每次間隔 10 min
+    *每次啟動必開啟 History fragment
+
+v1.2
+    較前幾版為新專案
+    對應 server v2.2 穩定
+    v3.0 UI (History顯示方式改為列表、分類功能、動態側欄)
+    當顯示新訊息時，每一則顯示時間根據字數調整( < 10 字 ->總時 3 s | 10 ~ 30 字 -> 0.2 s/字 | 30 > 0.25 s/字) 
+    開機自動啟動不會跳出畫面，只會執行service
+    ------------
+    New Key Store:
+	Key Store path C:\users\ASUS\Desktop\Yunan app\
+	password: @@nccu1st353@csc
+	
+	Key: LuckyKey146
+	password: AsH2NcCu1$
+
+v1.2.1
+    顯示新訊息時若有新訊息加入且其他訊息已顯示會插入到下一筆
+    新訊息底色改變
+    聚光燈模式取消範圍擴大
+	account: AD12m
+	pass: a@sdocd
+v1.3
+    訊息根據使用者設定來決定存在時間
+    下課時間偵測與判斷錯誤修復
+    歷史訊息由新到舊顯示
+    下課列表更新，修改為每次啟動程式時建立陣列
+
+v1.3.1
+    更新一節下課倒數秒數若出現過，且軟體未被關注，則會再次跳出畫面
+v1.3.2  
+    無提醒音
+    下課倒數秒數 30秒 (字顏色黑色，白色陰影)
+    新增"關於"活動
+    當顯示新訊息時，有新資料加入，加入到最後，若其他訊息均顯示過則直接顯示
+    isMessageOpen = 0 // 非關注
+                    1 // 新訊息倒數
+                    2 // 歷史訊息
+                    3 // 歷史訊息輪播
+                    4 // 無歷史訊息
+    新增已讀按鈕，若按下，則會從循環中刪除，其餘跟顯示新訊息相同
+    已讀/綠色 未讀/紅色
+
+
+v1.3.3 
+   
+
+// wake up key 268435462?
+// secondLand 拖動 
+
+        floatingViewCard.setOnTouchListener(new View.OnTouchListener() {
+            private float startX, startY;
+
+
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                AutoMove = false;
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        // 用户按下时记录初始位置
+                        startX = event.getRawX();
+                        startY = event.getRawY();
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        // 计算移动的距离
+                        float dx = event.getRawX() - startX;
+                        float dy = event.getRawY() - startY;
+
+                        // 移动视图
+                         if ((view.getX() + dx) < 0) {
+                            Log.d("startX2", startX+"");
+                            view.setX(0);
+                        } else if ((view.getX() + dx) > floatingView.getWidth()) {
+                             view.setX(floatingView.getWidth());
+                         }
+                         if ((view.getY() + dy) < 0) {
+                            view.setY(0);
+                        }else if ((view.getX() + dx) > floatingView.getHeight()) {
+                             view.setX(floatingView.getHeight());
+                         }
+                        else {
+                            view.setX(view.getX() + dx);
+                            view.setY(view.getY() + dy);
+                        }
+
+                        // 更新起始位置
+                        startX = event.getRawX();
+                        startY = event.getRawY();
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        // 用户抬起手指时的操作，如果需要的话
+                        break;
+                }
+                return true; // 返回 true 表示消费了触摸事件
+            }
+        });
+
+
+
+v1.4
+    isMessageOpen = 0 // 非關注
+                    1 // 新訊息倒數
+                    2 // 歷史訊息
+                    3 // 歷史訊息輪播
+                    4 // 無歷史訊息
+		    5 // 關於
+
+
+PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "MyWakeLock");
+wakeLock.acquire();
+
+
+
+
+                
