@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="mainBack">#292b2f</color>
+    <color name="reconnect_process">#486c99</color>
+    <color name="readBut">#5769E9</color>
+    <color name="url">#4978c4</color>
+    <color name="NewMessage">#998e5a</color>
+    <color name="HistoryNewMessage">#998e5a</color>
+    <color name="HistoryMessage">#3e4147</color>
+    <color name="CountDownBackGround">#FF000000</color>
+    <color name="read">#85ED91</color>
+    <color name="Unread">#f54949</color>
+    <color name="HisUnread">#f54949</color>
+    <color name="circle_progressbar">#fc9003</color>
+</resources>
