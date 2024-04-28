@@ -102,45 +102,44 @@ public class websocket extends WebSocketListener {
 
     }
 
-    Type listType = new TypeToken<List<Message>>(){}.getType();
-//    ContentValues values = new ContentValues();
 
-    List<Message> messages = new ArrayList<>();
     @Override
     public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
         SQLiteDatabase db = database.getReadableDatabase();
         ContentValues values = new ContentValues();
         Log.d("Get", "Get message"+ text);
 
-        JsonArray jsonArray = gson.fromJson(text, JsonArray.class);
-        for (JsonElement element : jsonArray) {
-            JsonObject jsonObject = element.getAsJsonObject();
+        JsonObject jsonObject = gson.fromJson(text, JsonObject.class);
+        // 確認是否有 header
+        if (jsonObject.has("header")) {
+            String type = jsonObject.get("header").getAsString(); // 取得 資料類型
+            if ("S0".equals(type)) {
+                boolean result = jsonObject.getAsJsonObject().get("result").getAsBoolean();
+                Log.d("Server back result", String.valueOf(result));
+            }
+            else if ("S1".equals(type)) {
 
-            // 確認是否有 header
-            if (jsonObject.has("header")) {
-                String type = jsonObject.get("header").getAsString(); // 取得 資料類型
+                JsonObject message = jsonObject.get("message").getAsJsonObject();
 
-                if ("S1".equals(type)) {
-                    Class_format return_to_serer = new Class_format(); // 建立訊息回傳確認實例
-                    returnKey = jsonObject.get("id").getAsInt();
-                    return_to_serer.setHeader("A2"); // 回傳廣播 ID
-                    return_to_serer.setReturnKey(String.valueOf(returnKey));
-                    String json = gson.toJson(return_to_serer);
-                    webSocket.send(json);
+                Class_format return_to_serer = new Class_format(); // 建立訊息回傳確認實例
+                returnKey = message.get("id").getAsInt();
+                return_to_serer.setHeader("A2"); // 回傳廣播 ID
+                return_to_serer.setReturnKey(String.valueOf(returnKey));
+                String json = gson.toJson(return_to_serer);
+                webSocket.send(json);
 
-                    values.put("onServerID", returnKey);
-                    values.put("teacher", jsonObject.get("name").getAsString());
-                    values.put("fromWhere", jsonObject.get("office").getAsString());
-                    values.put("content", jsonObject.get("content").getAsString());
-                    values.put("sendtime", jsonObject.get("time").getAsString());
-                    values.put("isNew", jsonObject.get("is_new").getAsString());
-                    values.put("finishDate", jsonObject.get("finish_date").getAsString());
-                    values.put("sound", jsonObject.get("sound").getAsString());
-                    db.insert("mytable", null, values);
+                values.put("onServerID", returnKey);
+                values.put("teacher", message.get("name").getAsString());
+                values.put("fromWhere", message.get("office").getAsString());
+                values.put("content", message.get("content").getAsString());
+                values.put("sendtime", message.get("time").getAsString());
+                values.put("isNew", message.get("is_new").getAsString());
+                values.put("finishDate", message.get("finish_date").getAsString());
+                values.put("sound", message.get("sound").getAsString());
+                db.insert("mytable", null, values);
 
-                    db.close();
-                }
-        }
+                db.close();
+            }
 
 
 
@@ -209,7 +208,7 @@ public class websocket extends WebSocketListener {
         private String classCode;
         private String className;
 
-        private String returnKey;
+        private String id;
 
         public String getHeader() {
             return header;
@@ -235,10 +234,10 @@ public class websocket extends WebSocketListener {
         }
 
         public String getReturnKey() {
-            return returnKey;
+            return id;
         }
         public void setReturnKey(String returnKey) {
-            this.returnKey = returnKey;
+            this.id = returnKey;
         }
     }
     public static class Message {
@@ -283,22 +282,4 @@ public class websocket extends WebSocketListener {
         public int getSound(){return sound;}
     }
 
-//    public static class keyReturn() {
-//        private String header;
-//        private int id;
-//
-//        public String getheader() {
-//            return header;
-//        }
-//        public setHeader(String header) {
-//            this.header = header;
-//        }
-//        public int getId() {
-//            return id;
-//        }
-//        public setId() {
-//
-//        }
-
-//    }
 }
