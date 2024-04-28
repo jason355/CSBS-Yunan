@@ -2,12 +2,17 @@ package com.hfad.swbs;
 
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaPlayer;
@@ -40,10 +45,30 @@ public class MainActivity extends AppCompatActivity {
     private websocket websocket;
     ContentValues values = new ContentValues();
 
-    boolean isFirst = true;
-
+    boolean login_result;
     MyDatabaseHelper database;
 
+    private final BroadcastReceiver login_to_server_Receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Objects.equals(intent.getAction(), "login_to_server_broadcast")) {
+
+                login_result = intent.getBooleanExtra("result", true);
+                Log.d("Server back result", String.valueOf(login_result));
+
+                if (login_result) {
+                    Intent intent_message = new Intent(MainActivity.this, messageActivity.class);
+                    intent.putExtra("fragmentTag", "New_message");
+                    startActivity(intent_message);
+                } else {
+                    loginProgressBar.setVisibility(View.INVISIBLE);
+                    showReminder(MainActivity.this, "教室代碼已被使用", "很抱歉，您目前使用的教室代碼已被其他裝置使用，請使用其他代碼謝謝!");
+                    database.writeClassNumber( "-2");
+                    database.writeClassName( "-2");
+                }
+            }
+        }
+    };
 
 
     @Override
@@ -138,45 +163,54 @@ public class MainActivity extends AppCompatActivity {
     private void loginToServer (String ClassNumber, String ClassName) {
         Log.d("messageInput", ClassNumber);
         try {
-            int classNumber = Integer.parseInt(ClassNumber);
             SQLiteDatabase initDatabase = database.getWritableDatabase();
             // 匯入資料庫
-            values.put("classNumber", ClassNumber);
-            values.put("className", ClassName);
-            initDatabase.insert("initData", null, values);
-            database.close();
-            loginProgressBar.setVisibility(View.VISIBLE);
 
-            if (!isMyServiceRunning(MyForegroundWebsocketService.class)) {
-                Intent serviceIntentWebsocket = new Intent(this, MyForegroundWebsocketService.class);
-                this.startForegroundService(serviceIntentWebsocket);
+            ContentValues values = new ContentValues();
+            String oldClassNumber = database.getClassNumber(null);
+
+            if ("-1".equals(oldClassNumber)) {
+                Log.d("writeClassName", oldClassNumber);
+
+                values.put("classNumber", ClassNumber);
+                values.put("className", ClassName);
+                initDatabase.insert("initData", null, values);
+                initDatabase.close();
+            } else {
+                values.put("classNumber", ClassNumber);
+
+                // 要覆寫的條件是 id 欄位等於 1
+                String whereClause = "id = ?";
+                String[] whereArgs = {String.valueOf(1)};
+
+                // 執行 UPDATE SQL 查詢
+                initDatabase.update("initData", values, whereClause, whereArgs);
+
+                values.put("className", ClassName);
+                // 執行 UPDATE SQL 查詢
+                initDatabase.update("initData", values, whereClause, whereArgs);
+                initDatabase.close();
             }
 
-            Intent intent = new Intent(this, messageActivity.class);
-            intent.putExtra("fragmentTag", "New_message");
-            startActivity(intent);
+//            database.writeClassNumber(ClassNumber);
+//            database.writeClassName(ClassName);
+            loginProgressBar.setVisibility(View.VISIBLE);
+
+
+
+
+//            if (!isMyServiceRunning(MyForegroundWebsocketService.class)) {
+//                Intent serviceIntentWebsocket = new Intent(this, MyForegroundWebsocketService.class);
+//                this.startForegroundService(serviceIntentWebsocket);
+//            }
+            Intent serviceIntentWebsocket = new Intent(this, MyForegroundWebsocketService.class);
+            this.startForegroundService(serviceIntentWebsocket);
+
         } catch (java.lang.NumberFormatException e)  {
             showToast("請輸入三位教室代碼與教室名稱");
         }
-
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
 
     private void checkEditTexts() {
         // Get text from both EditText fields
@@ -195,6 +229,53 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    public static void showReminder(Context context, String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 用户点击 OK 按钮时执行的操作
+                        dialog.dismiss(); // 关闭对话框
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter intentFilter1 = new IntentFilter("login_to_server_broadcast");
+        LocalBroadcastManager.getInstance(this).registerReceiver(login_to_server_Receiver, intentFilter1);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(login_to_server_Receiver);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(login_to_server_Receiver);
+    }
+
 
 
     @Override

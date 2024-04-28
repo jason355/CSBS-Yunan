@@ -20,9 +20,11 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -63,6 +65,7 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
     private DrawerLayout drawerLayout;
 
     boolean isConnected;
+    boolean login_result;
 
     ImageView NetworkStat;
     ProgressBar roundBar;
@@ -101,6 +104,23 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
                     reConnect_fab.setVisibility(View.INVISIBLE);
                 }else {
                     NetworkStat.setImageResource(R.mipmap.network_error);
+                    reConnect_fab.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    };
+
+    private final BroadcastReceiver login_to_server_Receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Objects.equals(intent.getAction(), "login_to_server_broadcast")) {
+
+                login_result = intent.getBooleanExtra("result", true);
+                Log.d("Server back result", String.valueOf(login_result));
+
+                if (!login_result) {
+                    showReminder(messageActivity.this, "教室代碼已被使用", "很抱歉，您目前使用的教室代碼已被其他裝置使用，將無法接收到任何廣播訊息，請將其他設備斷開連線或是洽資訊組");
+                    NetworkStat.setImageResource(R.mipmap.class_code_error);
                     reConnect_fab.setVisibility(View.VISIBLE);
                 }
             }
@@ -410,13 +430,16 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         IntentFilter intentFilter = new IntentFilter("websocket_connection_status");
         LocalBroadcastManager.getInstance(this).registerReceiver(connectionStatusReceiver, intentFilter);
 
+        IntentFilter intentFilter1 = new IntentFilter("login_to_server_broadcast");
+        LocalBroadcastManager.getInstance(this).registerReceiver(login_to_server_Receiver, intentFilter1);
+
         Intent intent = getIntent();
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         SharedPreferences sharedPreferences = getSharedPreferences("fragmentTag", MODE_PRIVATE);
         fragmentTag = intent.getStringExtra("fragmentTag");
         if (fragmentTag == null) {
-            fragmentTag = sharedPreferences.getString("key", null);
+            fragmentTag = sharedPreferences.getString("key", "New_message");
         }
         if (fragmentTag.equals("New_message")){
             database.editMessageStat(1);
@@ -440,9 +463,25 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
                 }
             });
         }
+    }
 
+    public  void showReminder(Context context, String title, String message) {
+        if (!isFinishing() && ! isDestroyed()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // 用户点击 OK 按钮时执行的操作
+                            dialog.dismiss(); // 关闭对话框
+                        }
+                    });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
 
     }
+
 
     private String transform_Version_With_Dot (String version) {
         StringBuilder result = new StringBuilder();
@@ -468,6 +507,8 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         editor.apply();
         fragmentTag = null;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(connectionStatusReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(login_to_server_Receiver);
+
 
     }
 
@@ -478,6 +519,8 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
     public void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(connectionStatusReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(login_to_server_Receiver);
+
 
     }
 

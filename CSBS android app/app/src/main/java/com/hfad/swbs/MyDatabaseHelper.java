@@ -207,7 +207,29 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
         return "-1";
     }
+    public void writeClassNumber(String newClassNumber) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        String oldClassNumber = getClassNumber(null);
 
+        if ("-1".equals(oldClassNumber)) {
+            Log.d("writeClassName", oldClassNumber);
+
+            values.put("classNumber", newClassNumber);
+            db.insert("initData", null, values);
+            db.close();
+        } else {
+            values.put("classNumber", newClassNumber);
+
+            // 要覆寫的條件是 id 欄位等於 1
+            String whereClause = "id = ?";
+            String[] whereArgs = {String.valueOf(1)};
+
+            // 執行 UPDATE SQL 查詢
+            db.update("initData", values, whereClause, whereArgs);
+            db.close();
+        }
+    }
     public String getClassName() {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT className FROM initData";
@@ -221,6 +243,29 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             }
         }
         return "-1";
+    }
+
+    public void writeClassName(String newClassName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        String oldClassName = getClassName();
+        if ("-1".equals(oldClassName)) {
+            Log.d("writeClassName", oldClassName);
+            values.put("className", newClassName);
+            db.insert("initData", null, values);
+            db.close();
+        } else {
+            values.put("className", newClassName);
+
+            // 要覆寫的條件是 id 欄位等於 1
+            String whereClause = "id = ?";
+            String[] whereArgs = { String.valueOf(1) };
+
+            // 執行 UPDATE SQL 查詢
+            db.update("initData", values, whereClause, whereArgs);
+            db.close();
+        }
+
     }
 
 

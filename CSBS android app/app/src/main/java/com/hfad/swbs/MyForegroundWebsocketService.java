@@ -7,9 +7,17 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import java.util.Objects;
 
 public class MyForegroundWebsocketService extends Service {
 
@@ -18,13 +26,33 @@ public class MyForegroundWebsocketService extends Service {
     private websocket webSocketClient;
     MyDatabaseHelper database;
 
-    boolean isConnected;
+    boolean login_result;
+
+    private final BroadcastReceiver login_to_server_Receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Objects.equals(intent.getAction(), "login_to_server_broadcast")) {
+
+                login_result = intent.getBooleanExtra("result", true);
+                Log.d("Websocket foreground service", String.valueOf(login_result));
+
+//                if (!login_result) {
+//                    onDestroy();
+//                }
+
+            }
+        }
+    };
+
+
 
     @Override
     public void onCreate() {
         super.onCreate();
         database = new MyDatabaseHelper(this);
         webSocketClient = new websocket(this);
+        IntentFilter intentFilter1 = new IntentFilter("login_to_server_broadcast");
+        LocalBroadcastManager.getInstance(this).registerReceiver(login_to_server_Receiver, intentFilter1);
     }
 
     @SuppressLint("ForegroundServiceType")
@@ -51,8 +79,9 @@ public class MyForegroundWebsocketService extends Service {
         // 停止任務，並移除前景狀態
         stopForeground(true);
         webSocketClient.close();
-
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(login_to_server_Receiver);
     }
+
 
     @Override
     public IBinder onBind(Intent intent) {

@@ -4,7 +4,9 @@ package com.hfad.swbs;
 
 import static androidx.core.content.ContextCompat.startActivity;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -67,7 +69,7 @@ public class websocket extends WebSocketListener {
 
 
     public void close() {
-        webSocket.close(10001, "WebSocket closed");
+        webSocket.close(1000, "WebSocket closed");
     }
 
     @Override
@@ -88,7 +90,7 @@ public class websocket extends WebSocketListener {
 
         // 打印 JSON 字符串
         System.out.println(json);
-        if (!Objects.equals(ClassCode, "-1")) {
+        if (!Objects.equals(ClassCode, "-1") && !Objects.equals(ClassCode, "-2")) {
             webSocket.send(json); // 傳送教室代碼與名稱
             broadcastConnectionStatus(true);
 //            Intent intent = new Intent(context, messageActivity.class);
@@ -115,7 +117,12 @@ public class websocket extends WebSocketListener {
             String type = jsonObject.get("header").getAsString(); // 取得 資料類型
             if ("S0".equals(type)) {
                 boolean result = jsonObject.getAsJsonObject().get("result").getAsBoolean();
-                Log.d("Server back result", String.valueOf(result));
+//                if (!result) {
+////                    close();
+////                    Intent websocketService = new Intent(context, MyForegroundWebsocketService.class);
+////                    context.stopService(websocketService);
+//                }
+                login_to_server_broadcast(result);
             }
             else if ("S1".equals(type)) {
 
@@ -163,7 +170,7 @@ public class websocket extends WebSocketListener {
 
     @Override
     public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-        startWebSocket();
+//        startWebSocket();
     }
 
     @Override
@@ -202,6 +209,14 @@ public class websocket extends WebSocketListener {
         intent.putExtra("is_connected", isConnected);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
+
+    private void login_to_server_broadcast(boolean result){
+        Intent intent = new Intent("login_to_server_broadcast");
+        intent.putExtra("result", result);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
+
+
 
     static class Class_format {
         private  String header;
