@@ -87,7 +87,7 @@ public class MyForegroundTimerService extends Service {
                 isMessageOpen = database.checkMessageStat();
                 counting = database.checkCounting();
 
-                // 有新消息，显示通知
+                // 有新消息，顯示通知
                 if ((database.checkNewMessage(1) || database.checkNewMessage(2) || database.checkNewMessage(3)) && isMessageOpen != 1  && counting == 0) {
 //                    wakeLock.acquire(10*60*1000L /*10 minutes*/);
                     Log.d("Test", "1");
@@ -96,6 +96,7 @@ public class MyForegroundTimerService extends Service {
                     delay = 10000;
                     Intent intent1 = new Intent(MyForegroundTimerService.this, messageActivity.class);
                     intent1.putExtra("fragmentTag", "New_message");
+                    intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent1);
                 }
             } else if (result == 1) {
@@ -129,6 +130,7 @@ public class MyForegroundTimerService extends Service {
 //                        wakeLock.acquire(10*60*1000L /*10 minutes*/);
                         Intent intentMessageActivity = new Intent(MyForegroundTimerService.this, messageActivity.class);
                         intentMessageActivity.putExtra("fragmentTag", "New_message");
+                        intentMessageActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intentMessageActivity);
                     }
                 }
