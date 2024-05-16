@@ -6,6 +6,7 @@ import static android.content.Context.POWER_SERVICE;
 
 import android.annotation.SuppressLint;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 
@@ -60,7 +61,6 @@ public class New_message extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
 
-    private String mParam2;
     int seeing = 0; // 現在正在顯示的訊息索引值
 
     TextView teacher;
@@ -88,6 +88,8 @@ public class New_message extends Fragment {
 
     MyDatabaseHelper database;
 
+    private MediaPlayer mediaPlayer;
+
     private  int TOTAL_TIME_MS = 10000;  // 進度條總時間（毫秒）
     private static final int INTERVAL_MS = 20;
 
@@ -110,7 +112,7 @@ public class New_message extends Fragment {
         if (getArguments() != null) {
             // TODO: Rename and change types of parameters
             String mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            String mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
 
@@ -373,9 +375,7 @@ public class New_message extends Fragment {
         // 判斷是否需要聲音
         if (Objects.equals(message[currentProgressBarIndex][5], "1")) {
             // 播放聲音
-            MediaPlayer mediaPlayer = MediaPlayer.create(content.getContext(), R.raw.marimba);
-            mediaPlayer.seekTo(0);
-            mediaPlayer.start();
+            mediaPlayer = createAndStartMediaPlayer(getContext(), R.raw.marimba);
             message[currentProgressBarIndex][5] = "0"; // 將聲音欄位改成 0
             database.editSound(message[currentProgressBarIndex][4], 0); // 將資料庫中聲音欄位改成 0
         }
@@ -571,9 +571,8 @@ public class New_message extends Fragment {
                 messageTemp = database.getNewMessage(1); // 取得 isNew = 1 之新訊息
 
                 if (messageTemp != null && messageTemp.length != 0) {
-                    MediaPlayer mediaPlayer = MediaPlayer.create(content.getContext(), R.raw.marimba);
-                    mediaPlayer.seekTo(0);
-                    mediaPlayer.start();
+                    mediaPlayer = createAndStartMediaPlayer(getContext(), R.raw.marimba);
+
                     Toast.makeText(content.getContext(), "新訊息!", Toast.LENGTH_LONG).show();
 
                     message = messageTemp; // 將新訊息更新到 message
@@ -612,9 +611,8 @@ public class New_message extends Fragment {
 
         // 判斷是否需聲音
         if (Objects.equals(message[currentProgressBarIndex][5], "1")) {
-            MediaPlayer mediaPlayer = MediaPlayer.create(content.getContext(), R.raw.marimba);
-            mediaPlayer.seekTo(0);
-            mediaPlayer.start();
+            mediaPlayer = createAndStartMediaPlayer(getContext(), R.raw.marimba);
+
             database.editSound(message[currentProgressBarIndex][4], 0);
             message[currentProgressBarIndex][5] = "0";
 
@@ -687,6 +685,7 @@ public class New_message extends Fragment {
             countDownTimer.cancel();
 //        Log.d("New_message", "Pause");
         handler.removeCallbacksAndMessages(null); // 移除 handler 的等待處理
+
     }
 
     // 新增進度條
@@ -740,6 +739,42 @@ public class New_message extends Fragment {
                 progressBar.setProgress(100);
             }
         }
+    }
+
+
+    private MediaPlayer createAndStartMediaPlayer(Context context, int resId) {
+        MediaPlayer mp;
+        if (resId != 0) {
+            // Create MediaPlayer with local resource
+            mp = MediaPlayer.create(context, resId);
+        } else {
+            throw new IllegalArgumentException("Either resId or uri must be provided");
+        }
+
+        if (mp != null) {
+            // Set up a listener for handling playback completion
+            mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    // Handle the end of the playback, if necessary
+                    mp.release();
+                }
+            });
+
+            // Set up an error listener
+            mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    // Handle the error and release the MediaPlayer
+                    mp.release();
+                    return true;
+                }
+            });
+
+            // Start playback
+            mp.start();
+        }
+        return mp;
     }
 
 

@@ -6,7 +6,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
+
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -15,7 +15,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -29,14 +28,11 @@ import android.widget.EditText;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Objects;
 
-import okhttp3.WebSocket;
 
 public class MainActivity extends AppCompatActivity {
-    TextView warning;
     EditText editPin;
     EditText editName;
     private ProgressBar loginProgressBar;
