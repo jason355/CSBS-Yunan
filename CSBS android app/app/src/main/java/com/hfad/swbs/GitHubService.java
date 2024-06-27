@@ -28,7 +28,7 @@ public class GitHubService {
 
         @Override
         protected String[] doInBackground(Void... voids) {
-            String version = "162"; // use database to get version
+            String version = "163"; // use database to get version
             String[] data = new String[2];
             int localVersion = Integer.parseInt(version);
             String rawUrl = "https://raw.githubusercontent.com/jason355/CSBS-Yunan/main/lastest_version.txt";

@@ -77,12 +77,14 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
     ImageView update_icon;
     String fragmentTag;
     TextView update_text;
+    TextView classcodeerror;
     private NavigationView navView;
     History_message historyMessageFragment;
     private websocket websocket;
 
 
     int isMessageOpen;
+
 
     View mainLayout;
     PowerManager.WakeLock wakeLock;
@@ -101,10 +103,10 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
                 Log.d("isConnected", "connect:"+ isConnected);
                 if (isConnected) {
                     NetworkStat.setImageResource(R.mipmap.network_good);
-                    reConnect_fab.setVisibility(View.INVISIBLE);
+//                    reConnect_fab.setVisibility(View.INVISIBLE);
                 }else {
                     NetworkStat.setImageResource(R.mipmap.network_error);
-                    reConnect_fab.setVisibility(View.VISIBLE);
+//                    reConnect_fab.setVisibility(View.VISIBLE);
                 }
             }
         }
@@ -121,11 +123,16 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
                 if (!login_result) {
                     showReminder(messageActivity.this, "教室代碼已被使用", "很抱歉，您目前使用的教室代碼已被其他裝置使用，將無法接收到任何廣播訊息，請將其他設備斷開連線或是洽資訊組");
                     NetworkStat.setImageResource(R.mipmap.class_code_error);
-                    reConnect_fab.setVisibility(View.VISIBLE);
+//                    reConnect_fab.setVisibility(View.VISIBLE);
+                    classcodeerror.setVisibility(View.VISIBLE);
+                }
+                else {
+                    classcodeerror.setVisibility(View.INVISIBLE);
                 }
             }
         }
     };
+
 
 
 
@@ -184,8 +191,8 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         drawerLayout = findViewById(R.id.drawer_layout); // 側欄布局
         navView = findViewById(R.id.nav_view); // 側欄
         FloatingActionButton fab = findViewById(R.id.fab); // 側欄懸浮按鈕
-        reConnect_fab = findViewById(R.id.reConnect_fab); // 重新連線懸浮按鈕
-        reConnect_fab.setVisibility(View.INVISIBLE); // 重新連線懸浮預設隱藏
+//        reConnect_fab = findViewById(R.id.reConnect_fab); // 重新連線懸浮按鈕
+//        reConnect_fab.setVisibility(View.INVISIBLE); // 重新連線懸浮預設隱藏
         NetworkStat = findViewById(R.id.NetWorkStat); // 連線狀態圖示
         NetworkStat.setImageResource(R.mipmap.network_good); // 預設有連線
         roundBar = findViewById(R.id.reConnect_progressBar); // 重新連線圓環
@@ -194,7 +201,7 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         update_icon = findViewById(R.id.update); // App 更新按鈕
         progressBar = findViewById(R.id.update_progressBar); // App 更新進度條
         update_text = findViewById(R.id.update_text); // 更新版本文字
-
+        classcodeerror = findViewById(R.id.classcodeerrortext); // 教室代碼重複錯誤訊息
         // 更新按鈕偵測
         update_icon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,20 +211,29 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
             }
         });
 
-
-
-
-        // websocket 實例化
-        websocket = new websocket(this);
-        // 重新連線按鈕偵測
-        reConnect_fab.setOnClickListener(new View.OnClickListener() {
+        classcodeerror.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                websocket.startWebSocket();
-                roundBar.setVisibility(View.VISIBLE);
+            public void onClick(View v) {
+                showReminder(messageActivity.this, "教室代碼已被使用", "很抱歉，您目前使用的教室代碼已被其他裝置使用，將無法接收到任何廣播訊息，請將其他設備斷開連線或是洽資訊組");
 
             }
         });
+
+//        // websocket 實例化
+//        websocket = new websocket(this);
+//        // 重新連線按鈕偵測
+//        reConnect_fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (!websocket.isReconnecting && !websocket.isConnected) {
+//                    Log.d("reConnect", "messageActivity reconnect ");
+//                    websocket.reConnect();
+//                    roundBar.setVisibility(View.VISIBLE);
+//                    reConnect_fab.setVisibility(View.INVISIBLE);
+//                }
+//
+//            }
+//        });
 
         // 設定側欄按鈕
         fab.setOnClickListener(new View.OnClickListener() {

@@ -2,17 +2,11 @@ package com.hfad.swbs;
 
 
 
-import static androidx.core.content.ContextCompat.startActivity;
 
-import android.app.AlertDialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.SpannableString;
-import android.text.util.Linkify;
 import android.util.Log;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -21,20 +15,12 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 public class websocket extends WebSocketListener {
     private WebSocket webSocket;
@@ -42,10 +28,11 @@ public class websocket extends WebSocketListener {
     Gson gson = new Gson();
     private final Context context;
 
-    String ip = "ws://140.119.99.17:80";
+    String ip = "ws://192.168.56.1:80";
     String ClassCode;
     String ClassName;
-    int retryAttempts = 0;
+
+
     int returnKey;
     int RETRY_DELAY_MS = 5000;
     public websocket(Context context) {
@@ -62,6 +49,8 @@ public class websocket extends WebSocketListener {
                 .build();
 
         webSocket = client.newWebSocket(request, this);
+        client.dispatcher().executorService().shutdown();
+
 
 
     }
@@ -75,6 +64,7 @@ public class websocket extends WebSocketListener {
     @Override
     public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
 //        SQLiteDatabase db = database.getReadableDatabase();
+
         ClassCode = database.getClassNumber(null);
         ClassName = database.getClassName();
         Class_format Class = new Class_format();
@@ -93,6 +83,7 @@ public class websocket extends WebSocketListener {
         if (!Objects.equals(ClassCode, "-1") && !Objects.equals(ClassCode, "-2")) {
             webSocket.send(json); // 傳送教室代碼與名稱
             broadcastConnectionStatus(true);
+
 //            Intent intent = new Intent(context, messageActivity.class);
 //            intent.putExtra("fragmentTag", "New_message");
 //            context.startActivity(intent);
@@ -117,6 +108,7 @@ public class websocket extends WebSocketListener {
             String type = jsonObject.get("header").getAsString(); // 取得 資料類型
             if ("S0".equals(type)) {
                 boolean result = jsonObject.getAsJsonObject().get("result").getAsBoolean();
+
 //                if (!result) {
 ////                    close();
 ////                    Intent websocketService = new Intent(context, MyForegroundWebsocketService.class);
@@ -134,18 +126,26 @@ public class websocket extends WebSocketListener {
                 return_to_serer.setReturnKey(String.valueOf(returnKey));
                 String json = gson.toJson(return_to_serer);
                 webSocket.send(json);
+                if (!database.checkReplete(String.valueOf(returnKey))) {
+                    values.put("onServerID", returnKey);
+                    values.put("teacher", message.get("name").getAsString());
+                    values.put("fromWhere", message.get("office").getAsString());
+                    values.put("content", message.get("content").getAsString());
+                    values.put("sendtime", message.get("time").getAsString());
+                    values.put("isNew", message.get("is_new").getAsString());
+                    values.put("finishDate", message.get("finish_date").getAsString());
+                    values.put("sound", message.get("sound").getAsString());
+                    db.insert("mytable", null, values);
 
-                values.put("onServerID", returnKey);
-                values.put("teacher", message.get("name").getAsString());
-                values.put("fromWhere", message.get("office").getAsString());
-                values.put("content", message.get("content").getAsString());
-                values.put("sendtime", message.get("time").getAsString());
-                values.put("isNew", message.get("is_new").getAsString());
-                values.put("finishDate", message.get("finish_date").getAsString());
-                values.put("sound", message.get("sound").getAsString());
-                db.insert("mytable", null, values);
+                    db.close();
+                }
 
-                db.close();
+
+//                Intent intent = new Intent(context, CountDown.class);
+//                context.startService(intent);
+
+
+
             }
 
 
@@ -159,6 +159,7 @@ public class websocket extends WebSocketListener {
 //        context.startService(intent);
 
 ////        //intent.putExtra("fragmentTag", "History_message");
+
 
 //        Intent intent1 = new Intent(context, messageActivity.class);
 //        intent1.putExtra("fragmentTag", "New_message");
@@ -183,25 +184,15 @@ public class websocket extends WebSocketListener {
         Log.e("Error", "some thing went wrong " + t);
         broadcastConnectionStatus(false);
 
-        if ("ws://140.119.99.17:80".equals(ip)) {
-            ip = "ws://192.168.56.1:8000";
-        } else {
-            ip = "ws://140.119.99.17:80";
-        }
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-            });
-
+        // 使用 Handler 進行重試
+        // 重新啟動 WebSocket 連接
+//        retry_handler.postDelayed(startRetryRunnable, RETRY_DELAY_MS);
 
             // 使用 Handler 進行重試
             // 重新啟動 WebSocket 連接
             new Handler(Looper.getMainLooper()).postDelayed(
                     this::startWebSocket, RETRY_DELAY_MS);
-
     }
 
     private void broadcastConnectionStatus(boolean isConnected) {

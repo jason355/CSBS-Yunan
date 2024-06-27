@@ -3,5 +3,6 @@
     <array name="preloaded_fonts" translatable="false">
         <item>@font/archivo_black</item>
         <item>@font/rowdies_bold</item>
+        <item>@font/telex</item>
     </array>
 </resources>

@@ -482,11 +482,27 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(search, null);
         if (cursor.moveToFirst()){
             int index = cursor.getColumnIndex("isNew");
+            cursor.close();
+            db.close();
             return cursor.getInt(index);
         }
+        cursor.close();
+        db.close();
         return -1;
     }
 
+    public boolean checkReplete(String ID) {
+        boolean exists = false;
+        SQLiteDatabase db = getReadableDatabase();
+        String search = "SELECT COUNT(*) FROM mytable where onServerID ="+ID;
+        Cursor cursor = db.rawQuery(search, null);
+        if (cursor.moveToFirst()) {
+            exists = cursor.getInt(0) > 0;
+        }
+        cursor.close();
+        db.close();
+        return  exists;
+    }
 
     public void editSound(String onServerID, int editTo){
         SQLiteDatabase db = getWritableDatabase();

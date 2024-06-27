@@ -74,7 +74,7 @@
             android:clickable="true"
             android:contentDescription="@string/refreshConnect"
             android:src="@mipmap/refresh"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:backgroundTint="#FFFFFF"
             app:elevation="6dp"
             app:fabCustomSize="65dp"
@@ -159,6 +159,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/update"
             app:layout_constraintVertical_bias="0.428" />
+
+        <TextView
+            android:id="@+id/classcodeerrortext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="@string/classCodeError"
+            android:textColor="#FF3F3F"
+            android:textSize="14sp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/update"
+            app:layout_constraintEnd_toStartOf="@+id/fragmentContainerView"
+            app:layout_constraintHorizontal_bias="0.417"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/reConnect_progressBar"
+            app:layout_constraintVertical_bias="0.03" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
