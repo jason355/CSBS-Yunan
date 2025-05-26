@@ -482,7 +482,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(search, null);
         if (cursor.moveToFirst()){
             int index = cursor.getColumnIndex("isNew");
-            cursor.close();
             db.close();
             return cursor.getInt(index);
         }

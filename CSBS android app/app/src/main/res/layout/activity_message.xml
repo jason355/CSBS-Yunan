@@ -191,14 +191,7 @@
         app:itemTextAppearance="@style/DrawerTextSize"
         app:itemTextColor="@color/white"
         app:itemSpacing="2dp"
-        app:menu="@menu/drawer_menu">
-
-        <ProgressBar
-            android:id="@+id/progressBar2"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </com.google.android.material.navigation.NavigationView>
+        app:menu="@menu/drawer_menu"/>
 </androidx.drawerlayout.widget.DrawerLayout>
 
 

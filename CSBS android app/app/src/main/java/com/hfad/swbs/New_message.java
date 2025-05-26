@@ -266,6 +266,7 @@ public class New_message extends Fragment {
 
         // 取得最新訊息 存入 message
         getUnReadMessage();
+
         if (message != null && message.length != 0) {
             cardView.setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.NewMessage)); // cardview 顏色設定
 //            unshow.setText("未讀"+message.length+"則"); // 顯示未讀訊息數量
@@ -274,6 +275,7 @@ public class New_message extends Fragment {
             int numberofProgressBar = message.length;
             if (numberofProgressBar != 1) {
                 addPrograssbar(view, numberofProgressBar); // 建立進度條
+                Log.d("showMessage", "begin");
                 showMessage(message); // 顯示訊息
                 startNextProgressBar_New(database, view); // 啟動倒數計時功能，控制訊息輪播
             }

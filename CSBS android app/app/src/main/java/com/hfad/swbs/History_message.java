@@ -183,8 +183,8 @@ public class History_message extends Fragment {
                 // 获取 ScrollView 的宽度和高度
                 width = scrollView.getWidth();
                 height = scrollView.getHeight();
-                Log.d("width", width+"");
-                Log.d("height", height+"");
+//                Log.d("width", width+"");
+//                Log.d("height", height+"");
                 // 在这里可以使用获取到的宽度和高度做一些操作
 
                 // 移除监听器，以免重复获取

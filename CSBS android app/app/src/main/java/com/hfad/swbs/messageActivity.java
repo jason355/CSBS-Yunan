@@ -71,8 +71,6 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
     ProgressBar roundBar;
     Handler handler;
 
-    FloatingActionButton reConnect_fab;
-
     ProgressBar progressBar;
     ImageView update_icon;
     String fragmentTag;
@@ -80,11 +78,8 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
     TextView classcodeerror;
     private NavigationView navView;
     History_message historyMessageFragment;
-    private websocket websocket;
-
 
     int isMessageOpen;
-
 
     View mainLayout;
     PowerManager.WakeLock wakeLock;
@@ -170,12 +165,6 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         }
 
 
-
-//        if (Build.VERSION.SDK_INT >= 27) {
-//            setShowWhenLocked(true);
-//            setTurnScreenOn(true);
-//        }
-
         // 設定上一頁按鈕功能，若沒有設定會跳到上一個 Activity
         OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
             @Override
@@ -219,21 +208,6 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
             }
         });
 
-//        // websocket 實例化
-//        websocket = new websocket(this);
-//        // 重新連線按鈕偵測
-//        reConnect_fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (!websocket.isReconnecting && !websocket.isConnected) {
-//                    Log.d("reConnect", "messageActivity reconnect ");
-//                    websocket.reConnect();
-//                    roundBar.setVisibility(View.VISIBLE);
-//                    reConnect_fab.setVisibility(View.INVISIBLE);
-//                }
-//
-//            }
-//        });
 
         // 設定側欄按鈕
         fab.setOnClickListener(new View.OnClickListener() {
@@ -442,7 +416,6 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
 //        wakeLock.acquire(10*60*1000L);
 
 
-
         IntentFilter intentFilter = new IntentFilter("websocket_connection_status");
         LocalBroadcastManager.getInstance(this).registerReceiver(connectionStatusReceiver, intentFilter);
 
@@ -454,13 +427,13 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         SharedPreferences sharedPreferences = getSharedPreferences("fragmentTag", MODE_PRIVATE);
         fragmentTag = intent.getStringExtra("fragmentTag");
+
         if (fragmentTag == null) {
             fragmentTag = sharedPreferences.getString("key", "New_message");
         }
         if (fragmentTag.equals("New_message")){
             database.editMessageStat(1);
             int messageStat = database.checkMessageStat();
-            Log.d("messageStat", "="+messageStat);
             fragmentTransaction.replace(R.id.fragmentContainerView, New_message.class, null);
             fragmentTransaction.commit();
         }
