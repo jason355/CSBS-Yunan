@@ -1,14 +1,22 @@
 package com.hfad.swbs;
 
 
-
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.google.gson.Gson;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class timer {
@@ -21,14 +29,23 @@ public class timer {
     Context context;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
     LocalDateTime currentTime;
+
+
+    private static final String TAG = "GitHubFetch";
+    private static final String URL = "https://raw.githubusercontent.com/jason355/CSBS-Yunan/refs/heads/main/coursetable.json";
+
+    Gson gson = new Gson();
     public timer (Context context) {
         this.context = context;
-
         database = new MyDatabaseHelper(context);
-        getBreakTime();
-        //Log.e("Break time", Integer.toString(breakTime[0][0]));
     }
 
+    public void init(BreakTimeCallback callback) {
+        fetchDataFromGitHub(data -> {
+            this.breakTime = data;
+            callback.onLoaded(data);
+        });
+    }
     public int startClock() {
         currentTime = LocalDateTime.now();
 
@@ -37,16 +54,16 @@ public class timer {
 
         int hour = Integer.parseInt(timeString.split(":")[0]);
         int minute = Integer.parseInt(timeString.split(":")[1]);
-        if (next > 8) {
+        if (next >= 8) {
             delaysec = (24 * 3600000) - (hour * 3600000 + minute * 60000);
             Log.d("DelaySec", String.valueOf(delaysec));
             return delaysec;
         }
 //
-        Log.d("NowHour", String.valueOf(hour));
-        Log.d("NowMinute", String.valueOf(minute));
-        Log.d("breakHour", String.valueOf(breakTime[next][0]));
-        Log.d("breakStartMin", String.valueOf(breakTime[next][1]));
+//        Log.d("NowHour", String.valueOf(hour));
+//        Log.d("NowMinute", String.valueOf(minute));
+//        Log.d("breakHour", String.valueOf(breakTime[next][0]));
+//        Log.d("breakStartMin", String.valueOf(breakTime[next][1]));
         if (hour > breakTime[next][0]) {
             Log.d("timer process", "hour > breakTime");
             next++;
@@ -94,63 +111,33 @@ public class timer {
         return -1;
     }
 
-
-    public void getBreakTime() {
-//        SQLiteDatabase readData = database.getReadableDatabase();
-//        Cursor cursor = readData.query("initData", projection, null, null, null, null, null);
-        breakTime = new int[27][3];
-
-        i = 0;
-        for (int j = 8; j < 16; j++) {  // 8 to 16 O'clock
-            if (j == 8) {
-                breakTime[i][0] = 8;
-                breakTime[i][1] = 5;
-                breakTime[i][2] = 9;
-            }
-            if (j == 12) {
-                breakTime[i][0] = 12;
-                breakTime[i][1] = 0;
-                breakTime[i][2] = 30;
-            }
-            else if (j == 13){
-                breakTime[i][0] = 13;
-                breakTime[i][1] = 5;
-                breakTime[i][2] = 9;
-            }
-            else if (j == 15){
-                breakTime[i][0] = 15;
-                breakTime[i][1] = 0;
-                breakTime[i][2] = 14;
-            }
-            else {
-                breakTime[i][0] = j;
-                breakTime[i][1] = 0;
-                breakTime[i][2] = 9;
-            }
-            i++;
+    public interface BreakTimeCallback {
+        void onLoaded(int[][] breakTime);
     }
 
+    private void fetchDataFromGitHub(BreakTimeCallback callback) {
 
-        //            for (int k = 0; k < 3;k++) {
-//                if (k == 0) {
-//                    breakTime[i][0] = j;
-//                    breakTime[i][1] = 0;
-//                    breakTime[i][2] = 10;
-//                }
-//                else if (k == 1) {
-//                    breakTime[i][0] = j;
-//                    breakTime[i][1] = 20;
-//                    breakTime[i][2] = 30;
-//                }
-//                else if (k == 2) {
-//                    breakTime[i][0] = j;
-//                    breakTime[i][1] = 40;
-//                    breakTime[i][2] = 50;
-//                }
-//                i++;
-//            }
-//        }
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(URL)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "Fetch failed", e);
+            }
 
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    String json = response.body().string();
+                    // 將 JSON 轉成二維 int array
+                    breakTime = gson.fromJson(json, int[][].class);
+                    callback.onLoaded(breakTime);
+
+                }
+            }
+        });
 
     }
 

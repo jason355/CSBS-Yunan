@@ -433,8 +433,7 @@ public class messageActivity extends AppCompatActivity implements GitHubService.
         }
         if (fragmentTag.equals("New_message")){
             database.editMessageStat(1);
-            int messageStat = database.checkMessageStat();
-            fragmentTransaction.replace(R.id.fragmentContainerView, New_message.class, null);
+            int messageStat = database.checkMessageStat();fragmentTransaction.replace(R.id.fragmentContainerView, New_message.class, null);
             fragmentTransaction.commit();
         }
         else if (fragmentTag.equals("History_message")) {

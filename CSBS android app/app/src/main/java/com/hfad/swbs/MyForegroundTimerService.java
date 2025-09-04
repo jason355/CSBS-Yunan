@@ -41,43 +41,13 @@ public class MyForegroundTimerService extends Service {
     MyDatabaseHelper database;
 
 
-//    private final BroadcastReceiver isMessageActivityOpen = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            if (intent.getAction().equals("MessageActivity_Open")) {
-//                isMessageOpen = intent.getIntExtra("is_open", 2);
-//                Log.d("isMessageOpen", "open:"+ isMessageOpen);
-//            }
-//        }
-//    };
-//    private final BroadcastReceiver haveCountDownReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            if (intent.getAction().equals("haveCountDown")) {
-//                haveCD = intent.getBooleanExtra("key", false);
-//                Log.d("haveCountDown", "open:"+ haveCD);
-//            }
-//        }
-//    };
-
-//    private final BroadcastReceiver countingReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            if (intent.getAction().equals("haveCountDown")) {
-//                counting = intent.getBooleanExtra("key", false);
-//                Log.d("haveCountDown", "open:"+ counting);
-//            }
-//        }
-//    };
-
-
 
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
             delay = 1000;
-            int result = clock.startClock();
+            result = clock.startClock();
             haveCD = database.checkHaveCountDown();
             Log.d("haveCountDown", "="+haveCD);
 
@@ -166,8 +136,11 @@ public class MyForegroundTimerService extends Service {
         super.onCreate();
         database = new MyDatabaseHelper(this);
         clock = new timer(this);
-        // 在某个地方发送广播
-
+        // 抓資料完再啟動 runnable
+        clock.init(breaktime -> {
+            Log.d("Timer", "breakTime ready, starting runnable");
+            handler.postDelayed(runnable, 0); // ✅ 確保 breakTime 已有值
+        });
 
     }
 
@@ -183,7 +156,7 @@ public class MyForegroundTimerService extends Service {
 
 
 
-        handler.postDelayed(runnable, 0);
+//        handler.postDelayed(runnable, 0);
 
 
         return START_STICKY;

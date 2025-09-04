@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class MyDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mydatabase.db";
-    private static int DATABASE_VERSION = 3;
+    private static int DATABASE_VERSION = 4;
 
 //    private final String classNumber = getClassNumber();
 
